@@ -58,6 +58,8 @@ local function fn()
     inst.entity:AddDynamicShadow()
     inst.entity:AddNetwork()
 
+    MakeProjectilePhysics(inst, 1, 0.5)
+
     inst.DynamicShadow:SetSize(1, .5)
 
     inst.Transform:SetFourFaced()

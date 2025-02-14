@@ -7,6 +7,9 @@ PrefabFiles = {
 }
 
 Assets = {
+    Asset("IMAGE", "images/inventoryimages/winslow.tex"),
+    Asset("ATLAS", "images/inventoryimages/winslow.xml"),
+
     Asset("IMAGE", "images/saveslot_portraits/winslow.tex"),
     Asset("ATLAS", "images/saveslot_portraits/winslow.xml"),
 
@@ -76,14 +79,6 @@ AddComponentPostInit("petleash", function(self)
         self.numpetspertag[tag] = self.numpetspertag[tag] or 0
     end
 
-    function self:IsPetATagLimitedOne(tag)
-        if self.maxpetspertag == nil then
-            return false
-        end
-
-        return self.maxpetspertag[tag] ~= nil
-    end
-
     function self:GetMaxPetsForTag(tag)
         if self.maxpetspertag == nil then
             return 0
@@ -123,8 +118,6 @@ AddComponentPostInit("petleash", function(self)
         self.pets[pet] = pet
         if self:IsPetAPrefabLimitedOne(pet.prefab) then
             self.numpetsperprefab[pet.prefab] = self.numpetsperprefab[pet.prefab] + 1
-        elseif self:IsPetATagLimitedOne(pet.prefab) then
-            self.numpetspertag[pet.prefab] = self.numpetspertag[pet.prefab] + 1
         else
             local noTag = true
             for tag, _ in pairs(self.numpetspertag) do
@@ -208,7 +201,8 @@ end)
 
 AddModCharacter("winslow", "MALE", skin_modes)
 
-local atlas = CRAFTING_ICONS_ATLAS
+
+local atlas = "images/inventoryimages/winslow.xml"
 AddRecipe2("violin", { Ingredient("nightmarefuel", 1) }, TECH.NONE,
     {
         builder_tag = "conductor",

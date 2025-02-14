@@ -1,16 +1,16 @@
 local assets =
 {
-    Asset("ANIM", "anim/fishingrod.zip"),
-    Asset("ANIM", "anim/swap_fishingrod.zip"),
+    Asset("ANIM", "anim/baton.zip"),
+    Asset("ANIM", "anim/swap_baton.zip"),
 }
 
 local function onequip (inst, owner)
     local skin_build = inst:GetSkinBuild()
     if skin_build ~= nil then
         owner:PushEvent("equipskinneditem", inst:GetSkinName())
-        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_fishingrod", inst.GUID, "swap_fishingrod")
+        owner.AnimState:OverrideItemSkinSymbol("swap_object", skin_build, "swap_baton", inst.GUID, "swap_baton")
     else
-        owner.AnimState:OverrideSymbol("swap_object", "swap_fishingrod", "swap_fishingrod")
+        owner.AnimState:OverrideSymbol("swap_object", "swap_baton", "swap_baton")
     end
 
     owner.AnimState:Show("ARM_carry")
@@ -37,13 +37,13 @@ local function fn()
 
     MakeInventoryPhysics(inst)
 
-    inst.AnimState:SetBank("fishingrod")
-    inst.AnimState:SetBuild("fishingrod")
+    inst.AnimState:SetBank("baton")
+    inst.AnimState:SetBuild("baton")
     inst.AnimState:PlayAnimation("idle")
 
     inst:AddTag("weapon")
 
-    local floater_swap_data = {sym_build = "swap_fishingrod"}
+    local floater_swap_data = {sym_build = "swap_baton"}
     MakeInventoryFloatable(inst, "med", 0.05, {0.8, 0.4, 0.8}, true, -12, floater_swap_data)
 
     inst.scrapbook_subcat = "tool"

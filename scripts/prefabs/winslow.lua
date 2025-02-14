@@ -74,6 +74,13 @@ local function OnDespawnPet(inst, pet)
 	end
 end
 
+local function OnEatFood(owner, health_delta, hunger_delta, sanity_delta, food, feeder)
+	if food:HasTag("monstermeat") then
+		return health_delta, hunger_delta, sanity_delta
+	end
+	return health_delta > 0 and health_delta or 0, hunger_delta > 0 and hunger_delta or 0,
+			sanity_delta > 0 and sanity_delta or 0
+end
 local function OnRemovedPet(inst, pet)
 	inst:RecalculateOrchestraPattern()
 end
@@ -92,6 +99,7 @@ end
 
 local common_postinit = function(inst)
 	inst:AddTag("conductor")
+	inst:AddTag("roteater")
 	inst.MiniMapEntity:SetIcon("winslow.tex")
 end
 
@@ -103,6 +111,18 @@ local master_postinit = function(inst)
 	inst.components.health:SetMaxHealth(TUNING.WINSLOW_HEALTH)
 	inst.components.hunger:SetMax(TUNING.WINSLOW_HUNGER)
 	inst.components.sanity:SetMax(TUNING.WINSLOW_SANITY)
+
+	-- inst.components.foodaffinity:AddFoodtypeAffinity(FOODTYPE.GENERIC, 1)
+	-- inst.components.foodaffinity:AddFoodtypeAffinity(FOODTYPE.MEAT, 1)
+	-- inst.components.foodaffinity:AddFoodtypeAffinity(FOODTYPE.VEGGIE, 1)
+	-- inst.components.foodaffinity:AddFoodtypeAffinity(FOODTYPE.SEEDS, 1)
+	-- inst.components.foodaffinity:AddFoodtypeAffinity(FOODTYPE.BERRY, 1)
+	-- inst.components.foodaffinity:AddFoodtypeAffinity(FOODTYPE.RAW, 1)
+	-- inst.components.foodaffinity:AddFoodtypeAffinity(FOODTYPE.GOODIES, 1)
+
+	if inst.components.eater ~= nil then
+		inst.components.eater.custom_stats_mod_fn = OnEatFood
+	end
 
 	if inst.components.petleash ~= nil then
 		inst._OnSpawnPet = inst.components.petleash.onspawnfn
