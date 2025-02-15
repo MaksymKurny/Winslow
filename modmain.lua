@@ -2,7 +2,7 @@ PrefabFiles = {
     "winslow",
     "winslow_none",
     "baton",
-    "violin",
+    "musical_instruments",
     "winslow_orchestraproxy",
 }
 

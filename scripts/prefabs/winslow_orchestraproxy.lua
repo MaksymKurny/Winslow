@@ -73,8 +73,7 @@ local function MakeProxy(prefabname, product)
 end
 
 return MakeProxy("winslow_orchestraproxy_violin", "violin"),
-MakeProxy("winslow_orchestraproxy_violin", "violin"),
-MakeProxy("winslow_orchestraproxy_drum", "violin"),
+MakeProxy("winslow_orchestraproxy_drum", "drum"),
 MakeProxy("winslow_orchestraproxy_clarinet", "violin"),
 MakeProxy("winslow_orchestraproxy_bass", "violin"),
 MakeProxy("winslow_orchestraproxy_trombone", "violin"),

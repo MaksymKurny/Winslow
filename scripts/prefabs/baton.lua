@@ -12,8 +12,8 @@ local function onequip(inst, owner)
     else
         owner.AnimState:OverrideSymbol("swap_object", "swap_baton", "swap_baton")
     end
-    if owner.ShowPets then
-        owner:ShowPets()
+    if owner.components.orchestra then
+        owner.components.orchestra:ShowInstruments()
     end
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
@@ -24,8 +24,8 @@ local function onunequip(inst, owner)
     if skin_build ~= nil then
         owner:PushEvent("unequipskinneditem", inst:GetSkinName())
     end
-    if owner.HidePets then
-        owner:HidePets()
+    if owner.components.orchestra then
+        owner.components.orchestra:HideInstruments()
     end
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")

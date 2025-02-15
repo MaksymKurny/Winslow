@@ -38,41 +38,6 @@ local function onload(inst)
 	end
 end
 
-local function WLFSort(a, b) -- Better than roundcheck!
-	return a.GUID < b.GUID
-end
-
-local function RecalculateOrchestraPattern(inst)
-	local pets = inst.components.petleash and inst.components.petleash:GetPetsWithTag("orchestra") or nil
-	if pets then
-		inst.orchestra_pattern = pets
-		table.sort(pets, WLFSort)
-		for i, v in ipairs(pets) do
-			pets[v] = i
-		end
-		pets.maxpets = #pets
-	else
-		inst.orchestra_pattern = nil
-	end
-end
-
-local function OnSpawnPet(inst, pet)
-	print("spawn")
-	inst:RecalculateOrchestraPattern()
-
-	if inst._OnSpawnPet ~= nil then
-		inst:_OnSpawnPet(pet)
-	end
-end
-
-local function OnDespawnPet(inst, pet)
-	inst:RecalculateOrchestraPattern()
-
-	if inst._OnDespawnPet ~= nil then
-		inst:_OnDespawnPet(pet)
-	end
-end
-
 local function OnEatFood(owner, health_delta, hunger_delta, sanity_delta, food, feeder)
 	if food:HasTag("monstermeat") then
 		return health_delta, hunger_delta, sanity_delta
@@ -80,18 +45,10 @@ local function OnEatFood(owner, health_delta, hunger_delta, sanity_delta, food, 
 	return health_delta > 0 and health_delta or 0, hunger_delta > 0 and hunger_delta or 0,
 			sanity_delta > 0 and sanity_delta or 0
 end
-local function OnRemovedPet(inst, pet)
-	inst:RecalculateOrchestraPattern()
-end
 
 local function OnAttacked(inst)
-	if inst.components.petleash and math.random() < TUNING.INST_SHATTER_CHANCE then
-		local pet_list = {}
-		for k, v in pairs(inst.components.petleash:GetPets()) do
-			if v:HasTag("winslow_pet") and not v:IsInLimbo() then
-				table.insert(pet_list, v)
-			end
-		end
+	if math.random() < TUNING.INST_SHATTER_CHANCE then
+		local pet_list = inst.components.orchestra:GetInstruments() or {}
 
 		if #pet_list > 0 then
 			local random_pet = pet_list[math.random(#pet_list)]
@@ -107,50 +64,9 @@ local function OnAttacked(inst)
 end
 
 local function RemoveWinslowPets(inst)
-	local todespawn = {}
-	for k, v in pairs(inst.components.petleash:GetPets()) do
-		if v:HasTag("winslow_pet") then
-			table.insert(todespawn, v)
-		end
-	end
+	local todespawn = inst.components.orchestra:GetInstruments(true) or {}
 	for i, v in ipairs(todespawn) do
 		v:RemoveWinslowPet()
-	end
-end
-
-local function HidePets(inst)
-	local tohide = {}
-	for k, v in pairs(inst.components.petleash:GetPets()) do
-		if v:HasTag("winslow_pet") then
-			table.insert(tohide, v)
-		end
-	end
-	if inst.components.timer == nil then
-		inst:AddComponent("timer")
-	end
-
-	for i, v in ipairs(tohide) do
-		if v.components.timer then
-			v.components.timer:StartTimer("HideOrchestra", 10.5 * FRAMES)
-		end
-		v.formation_radius = 0
-	end
-end
-
-local function ShowPets(inst)
-	local toshow = {}
-	for k, v in pairs(inst.components.petleash:GetPets()) do
-		if v:HasTag("winslow_pet") then
-			table.insert(toshow, v)
-		end
-	end
-	local pos = inst:GetPosition()
-	for i, v in ipairs(toshow) do
-		v.components.timer:StopTimer("HideOrchestra")
-		v:ReturnToScene()
-		v.Transform:SetPosition(pos:Get())
-		inst.SoundEmitter:PlaySound("floating")
-		v.formation_radius = TUNING.DEFAULT_FORMATION_RADIUS
 	end
 end
 
@@ -205,17 +121,7 @@ local master_postinit = function(inst)
 		inst.components.eater.custom_stats_mod_fn = OnEatFood
 	end
 
-	if inst.components.petleash ~= nil then
-		inst._OnSpawnPet = inst.components.petleash.onspawnfn
-		inst._OnDespawnPet = inst.components.petleash.ondespawnfn
-	else
-		inst:AddComponent("petleash")
-	end
-	local petleash = inst.components.petleash
-	petleash:SetOnSpawnFn(OnSpawnPet)
-	petleash:SetOnDespawnFn(OnDespawnPet)
-	petleash:SetOnRemovedFn(OnRemovedPet)
-	petleash:SetMaxPetsForTag("orchestra", TUNING.ORCHESTRA_LIMIT)
+	inst:AddComponent("orchestra")
 
 	inst:ListenForEvent("ms_playerreroll", RemoveWinslowPets)
 	inst:ListenForEvent("death", RemoveWinslowPets)
@@ -223,10 +129,6 @@ local master_postinit = function(inst)
 	inst._watching = {}
 	inst:DoPeriodicTask(1, UpdateWatchList)
 	inst:ListenForEvent("attacked", OnAttacked)
-
-	inst.RecalculateOrchestraPattern = RecalculateOrchestraPattern
-	inst.HidePets = HidePets
-	inst.ShowPets = ShowPets
 
 	inst.OnLoad = onload
 	inst.OnNewSpawn = onload
