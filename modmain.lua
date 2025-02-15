@@ -9,6 +9,7 @@ PrefabFiles = {
 Assets = {
     Asset("IMAGE", "images/inventoryimages/winslow.tex"),
     Asset("ATLAS", "images/inventoryimages/winslow.xml"),
+    Asset("ATLAS_BUILD", "images/inventoryimages/winslow.xml", 256),
 
     Asset("IMAGE", "images/saveslot_portraits/winslow.tex"),
     Asset("ATLAS", "images/saveslot_portraits/winslow.xml"),
@@ -48,7 +49,7 @@ local modimport = modimport
 local AddClassPostConstruct = AddClassPostConstruct
 local AddComponentPostInit = AddComponentPostInit
 local AddModCharacter = AddModCharacter
-local AddRecipe2 = AddRecipe2
+local AddCharacterRecipe = AddCharacterRecipe
 local GetModConfigData = GetModConfigData
 
 GLOBAL.setfenv(1, GLOBAL)
@@ -69,6 +70,27 @@ local skin_modes = {
 AddComponentPostInit("petleash", function(self)
     self.maxpetspertag = nil
     self.numpetspertag = nil
+    local onremovepet = self._onremovepet
+    self._onremovepet = function(pet)
+        if self.pets[pet] ~= nil then
+            local noTag = true
+            for tag, _ in pairs(self.numpetspertag) do
+                if pet:HasTag(tag) then
+                    self.numpetspertag[tag] = self.numpetspertag[tag] - 1
+                    noTag = false
+                end
+            end
+            if noTag then
+                onremovepet(pet)
+            else
+                self.pets[pet] = nil
+
+                if self.onpetremoved ~= nil then
+                    self.onpetremoved(self.inst, pet)
+                end
+            end
+        end
+    end
 
 
     function self:SetMaxPetsForTag(tag, maxpets)
@@ -201,160 +223,156 @@ end)
 
 AddModCharacter("winslow", "MALE", skin_modes)
 
-
 local atlas = "images/inventoryimages/winslow.xml"
-AddRecipe2("violin", { Ingredient("nightmarefuel", 1) }, TECH.NONE,
+RegisterInventoryItemAtlas(atlas, "baton.tex")
+AddCharacterRecipe("baton", { Ingredient("log", 1), Ingredient("nightmarefuel", 1) }, TECH.NONE,
+    {
+        builder_tag = "conductor",
+        atlas = atlas,
+    })
+AddCharacterRecipe("violin", { Ingredient("nightmarefuel", 1) }, TECH.NONE,
     {
         builder_tag = "conductor",
         atlas = atlas,
         image = "violin.tex",
         product = "winslow_orchestraproxy_violin",
-        sg_state =
-        "spawn_mutated_creature",
+        sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
-AddRecipe2("drum", { Ingredient("nightmarefuel", 1), Ingredient("pigskin", 1) }, TECH.NONE,
+    })
+AddCharacterRecipe("drum", { Ingredient("nightmarefuel", 1), Ingredient("pigskin", 1) }, TECH.NONE,
     {
         builder_tag = "conductor",
         atlas = atlas,
         image = "drum.tex",
         product = "winslow_orchestraproxy_drum",
-        sg_state =
-        "spawn_mutated_creature",
+        sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
-AddRecipe2("clarinet", { Ingredient("nightmarefuel", 2), Ingredient("transistor", 1) }, TECH.NONE,
+    })
+AddCharacterRecipe("clarinet", { Ingredient("nightmarefuel", 2), Ingredient("transistor", 1) }, TECH.NONE,
     {
         builder_tag = "conductor",
         atlas = atlas,
         image = "clarinet.tex",
         product = "winslow_orchestraproxy_clarinet",
-        sg_state =
-        "spawn_mutated_creature",
+        sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
-AddRecipe2("bass", { Ingredient("nightmarefuel", 2), Ingredient("livinglog", 1) }, TECH.NONE,
+    })
+AddCharacterRecipe("bass", { Ingredient("nightmarefuel", 2), Ingredient("livinglog", 1) }, TECH.NONE,
     {
         builder_tag = "conductor",
         atlas = atlas,
         image = "clarinet.tex",
         product = "winslow_orchestraproxy_bass",
-        sg_state =
-        "spawn_mutated_creature",
+        sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
-AddRecipe2("trombone", { Ingredient("nightmarefuel", 2), Ingredient("goldnugget", 1) }, TECH.NONE,
+    })
+AddCharacterRecipe("trombone", { Ingredient("nightmarefuel", 2), Ingredient("goldnugget", 1) }, TECH.NONE,
     {
         builder_tag = "conductor",
         atlas = atlas,
         image = "trombone.tex",
         product = "winslow_orchestraproxy_trombone",
-        sg_state =
-        "spawn_mutated_creature",
+        sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
-AddRecipe2("guitar", { Ingredient("nightmarefuel", 2), Ingredient("log", 4) }, TECH.NONE,
+    })
+AddCharacterRecipe("guitar", { Ingredient("nightmarefuel", 2), Ingredient("log", 4) }, TECH.NONE,
     {
         builder_tag = "conductor",
         atlas = atlas,
         image = "guitar.tex",
         product = "winslow_orchestraproxy_guitar",
-        sg_state =
-        "spawn_mutated_creature",
+        sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
+    })
 
-AddRecipe2("piano", { Ingredient("nightmarefuel", 3), Ingredient("marble", 2) }, TECH.NONE,
+AddCharacterRecipe("piano", { Ingredient("nightmarefuel", 3), Ingredient("marble", 2) }, TECH.NONE,
     {
         builder_tag = "conductor_allegiance_shadow",
         atlas = atlas,
         image = "piano.tex",
-        product =
-        "winslow_orchestraproxy_piano",
+        product = "winslow_orchestraproxy_piano",
         sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
-AddRecipe2("saxophone", { Ingredient("nightmarefuel", 3), Ingredient("goldnugget", 5) }, TECH.NONE,
+    })
+AddCharacterRecipe("saxophone", { Ingredient("nightmarefuel", 3), Ingredient("goldnugget", 5) }, TECH.NONE,
     {
         builder_tag = "conductor_allegiance_shadow",
         atlas = atlas,
         image = "saxophone.tex",
-        product =
-        "winslow_orchestraproxy_saxophone",
+        product = "winslow_orchestraproxy_saxophone",
         sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
+    })
 
-AddRecipe2("shamisen", { Ingredient("moonglass", 2), Ingredient("goldnugget", 2) }, TECH.NONE,
+AddCharacterRecipe("shamisen", { Ingredient("moonglass", 2), Ingredient("goldnugget", 2) }, TECH.NONE,
     {
         builder_tag = "conductor_allegiance_lunar",
         atlas = atlas,
         image = "shamisen.tex",
-        product =
-        "winslow_orchestraproxy_shamisen",
+        product = "winslow_orchestraproxy_shamisen",
         sg_state = "spawn_mutated_creature",
         actionstr = "TRANSFORM",
         no_deconstruction = true,
         dropitem = true,
         canbuild = function(
             inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")), "HASPET"
+            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
+                "FULLORCHESTRA"
         end
-    },
-    { "CHARACTER" })
+    })

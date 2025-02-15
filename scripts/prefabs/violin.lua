@@ -24,7 +24,6 @@ local function finish_transformed_life(inst)
 end
 
 local FORMATION_MAX_SPEED = 10.5
-local FORMATION_RADIUS = 3.5
 local FORMATION_ROTATION_SPEED = 0.5
 local function OnUpdate(inst, dt)
     local leader = inst.components.follower and inst.components.follower:GetLeader() or nil
@@ -35,7 +34,7 @@ local function OnUpdate(inst, dt)
         local theta = (index / maxpets) * TWOPI + GetTime() * FORMATION_ROTATION_SPEED
         local lx, ly, lz = leader.Transform:GetWorldPosition()
 
-        lx, lz = lx + FORMATION_RADIUS * math.cos(theta), lz + FORMATION_RADIUS * math.sin(theta)
+        lx, lz = lx + inst.formation_radius * math.cos(theta), lz + inst.formation_radius * math.sin(theta)
 
         local px, py, pz = inst.Transform:GetWorldPosition()
         local dx, dz = px - lx, pz - lz
@@ -49,18 +48,28 @@ local function OnUpdate(inst, dt)
     end
 end
 
+local function timerdone(inst, data)
+    if data.name == "HideOrchestra" then
+        inst:RemoveFromScene()
+        if inst.SoundEmitter then
+            inst.SoundEmitter:KillAllSounds()
+        end
+    end
+end
+
+local function OnExitLimbo(inst)
+    inst.SoundEmitter:PlaySound("grotto/creatures/light_bug/fly_LP", "loop")
+end
+
 local function fn()
     local inst = CreateEntity()
 
     inst.entity:AddTransform()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
-    inst.entity:AddDynamicShadow()
     inst.entity:AddNetwork()
 
     MakeProjectilePhysics(inst, 1, 0.5)
-
-    inst.DynamicShadow:SetSize(1, .5)
 
     inst.Transform:SetFourFaced()
 
@@ -90,7 +99,6 @@ local function fn()
 
     -- inst._formation_distribution_toggle = nil
     -- inst._find_target_task = nil
-    inst._time_since_formation_attacked = -TUNING.LIGHTFLIER.ON_ATTACKED_ALERT_DURATION
 
     inst:AddComponent("locomotor")
     inst.components.locomotor:EnableGroundSpeedMultiplier(false)
@@ -120,6 +128,11 @@ local function fn()
 
     inst.no_spawn_fx = true
     inst.RemoveWinslowPet = finish_transformed_life
+
+    inst:ListenForEvent("exitlimbo", OnExitLimbo)
+    inst:ListenForEvent("timerdone", timerdone)
+    inst:AddComponent("timer")
+    inst.formation_radius = TUNING.DEFAULT_FORMATION_RADIUS
 
     local updatelooper = inst:AddComponent("updatelooper")
     updatelooper:AddOnUpdateFn(OnUpdate)

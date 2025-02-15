@@ -84,6 +84,28 @@ local function OnRemovedPet(inst, pet)
 	inst:RecalculateOrchestraPattern()
 end
 
+local function OnAttacked(inst)
+	if inst.components.petleash and math.random() < TUNING.INST_SHATTER_CHANCE then
+		local pet_list = {}
+		for k, v in pairs(inst.components.petleash:GetPets()) do
+			if v:HasTag("winslow_pet") and not v:IsInLimbo() then
+				table.insert(pet_list, v)
+			end
+		end
+
+		if #pet_list > 0 then
+			local random_pet = pet_list[math.random(#pet_list)]
+			if random_pet and random_pet.RemoveWinslowPet then
+				random_pet:RemoveWinslowPet()
+			end
+		end
+
+		if inst.components.sanity then
+			inst.components.sanity:DoDelta(-TUNING.SANITY_TINY)
+		end
+	end
+end
+
 local function RemoveWinslowPets(inst)
 	local todespawn = {}
 	for k, v in pairs(inst.components.petleash:GetPets()) do
@@ -96,30 +118,45 @@ local function RemoveWinslowPets(inst)
 	end
 end
 
-local function OnAttacked(inst)
-	if inst.components.petleash and math.random() < TUNING.INST_SHATTER_CHANCE then
-		local pets = inst.components.petleash:GetPets()
-		local pet_list = {}
+local function HidePets(inst)
+	local tohide = {}
+	for k, v in pairs(inst.components.petleash:GetPets()) do
+		if v:HasTag("winslow_pet") then
+			table.insert(tohide, v)
+		end
+	end
+	if inst.components.timer == nil then
+		inst:AddComponent("timer")
+	end
 
-		for pet, _ in pairs(pets) do
-			table.insert(pet_list, pet)
+	for i, v in ipairs(tohide) do
+		if v.components.timer then
+			v.components.timer:StartTimer("HideOrchestra", 10.5 * FRAMES)
 		end
+		v.formation_radius = 0
+	end
+end
 
-		if #pet_list > 0 then
-			local random_pet = pet_list[math.random(#pet_list)]
-			if random_pet and random_pet.RemoveWinslowPet then
-				random_pet:RemoveWinslowPet()
-			end
+local function ShowPets(inst)
+	local toshow = {}
+	for k, v in pairs(inst.components.petleash:GetPets()) do
+		if v:HasTag("winslow_pet") then
+			table.insert(toshow, v)
 		end
-		if inst.components.sanity then
-			inst.components.sanity:DoDelta(-TUNNING.SANITY_TINY)
-		end
+	end
+	local pos = inst:GetPosition()
+	for i, v in ipairs(toshow) do
+		v.components.timer:StopTimer("HideOrchestra")
+		v:ReturnToScene()
+		v.Transform:SetPosition(pos:Get())
+		inst.SoundEmitter:PlaySound("floating")
+		v.formation_radius = TUNING.DEFAULT_FORMATION_RADIUS
 	end
 end
 
 local function OnAllyAttacked(inst)
 	if inst and inst.components.health and not inst.components.health:IsDead() and inst._sanity_watcher and inst._sanity_watcher.components.sanity then
-		inst._sanity_watcher.components.sanity:DoDelta(-TUNNING.SANITY_SMALL)
+		inst._sanity_watcher.components.sanity:DoDelta(-TUNING.SANITY_SMALL)
 	end
 end
 
@@ -188,6 +225,8 @@ local master_postinit = function(inst)
 	inst:ListenForEvent("attacked", OnAttacked)
 
 	inst.RecalculateOrchestraPattern = RecalculateOrchestraPattern
+	inst.HidePets = HidePets
+	inst.ShowPets = ShowPets
 
 	inst.OnLoad = onload
 	inst.OnNewSpawn = onload

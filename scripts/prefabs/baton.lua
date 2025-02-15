@@ -4,7 +4,7 @@ local assets =
     Asset("ANIM", "anim/swap_baton.zip"),
 }
 
-local function onequip (inst, owner)
+local function onequip(inst, owner)
     local skin_build = inst:GetSkinBuild()
     if skin_build ~= nil then
         owner:PushEvent("equipskinneditem", inst:GetSkinName())
@@ -12,7 +12,9 @@ local function onequip (inst, owner)
     else
         owner.AnimState:OverrideSymbol("swap_object", "swap_baton", "swap_baton")
     end
-
+    if owner.ShowPets then
+        owner:ShowPets()
+    end
     owner.AnimState:Show("ARM_carry")
     owner.AnimState:Hide("ARM_normal")
 end
@@ -22,7 +24,9 @@ local function onunequip(inst, owner)
     if skin_build ~= nil then
         owner:PushEvent("unequipskinneditem", inst:GetSkinName())
     end
-
+    if owner.HidePets then
+        owner:HidePets()
+    end
     owner.AnimState:Hide("ARM_carry")
     owner.AnimState:Show("ARM_normal")
 end
@@ -43,8 +47,8 @@ local function fn()
 
     inst:AddTag("weapon")
 
-    local floater_swap_data = {sym_build = "swap_baton"}
-    MakeInventoryFloatable(inst, "med", 0.05, {0.8, 0.4, 0.8}, true, -12, floater_swap_data)
+    local floater_swap_data = { sym_build = "swap_baton" }
+    MakeInventoryFloatable(inst, "med", 0.05, { 0.8, 0.4, 0.8 }, true, -12, floater_swap_data)
 
     inst.scrapbook_subcat = "tool"
 
@@ -61,6 +65,7 @@ local function fn()
     inst:AddComponent("inventoryitem")
 
     inst:AddComponent("equippable")
+    inst.components.equippable.restrictedtag = "conductor"
     inst.components.equippable:SetOnEquip(onequip)
     inst.components.equippable:SetOnUnequip(onunequip)
 

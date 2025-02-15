@@ -11,12 +11,7 @@ local function onbuilt(inst, data)
 
     if inst.builder ~= nil and inst.builder:IsValid() then
         local pos = inst.builder:GetPosition()
-        local offset = FindWalkableOffset(pos, math.random()*TWOPI, 3, 12, false, false, nil, false, true)
-
-        if offset ~= nil then
-            pos = pos + offset
-            inst.Transform:SetPosition(pos:Get())
-        end
+        inst.Transform:SetPosition(pos:Get())
     end
 
     inst:ListenForEvent("onremove", function(_) inst.builder = nil end, inst.builder)
@@ -31,7 +26,7 @@ local function MakeProxy(prefabname, product)
             local pet = inst.builder.components.petleash:SpawnPetAt(x, y, z, product)
             if pet then
                 if inst.builder.components.health and inst.builder.components.health:IsDead() then
-                    pet:RemoveWormwoodPet()
+                    pet:RemoveWinslowPet()
                 end
             end
         end
@@ -56,8 +51,6 @@ local function MakeProxy(prefabname, product)
         inst.AnimState:PlayAnimation("transform")
         inst.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
         inst.AnimState:SetFinalOffset(1)
-
-        inst:SetPhysicsRadiusOverride(2.0) -- For spacing when crafting.
 
         inst.entity:SetPristine()
         if not TheWorld.ismastersim then
