@@ -1,0 +1,8 @@
+<Atlas>
+    <Texture filename="winslow_skilltree.tex"/>
+    <Elements>
+        <Element name="winslow_background.tex" u1="0.00048828125" u2="0.83154297" v1="0.26220703" v2="0.99951172"/>
+        <Element name="winslow_battle_part_1.tex" u1="0.83251953" u2="0.89501953" v1="0.93701172" v2="0.99951172"/>
+        <Element name="winslow_battle_part_2.tex" u1="0.89599609" u2="0.95849609" v1="0.93701172" v2="0.99951172"/>
+    </Elements>
+</Atlas>

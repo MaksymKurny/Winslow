@@ -2,6 +2,7 @@ local MakePlayerCharacter = require "prefabs/player_common"
 
 local assets = {
 	Asset("SCRIPT", "scripts/prefabs/player_common.lua"),
+	Asset("SCRIPT", "scripts/prefabs/skilltree_winslow.lua"),
 }
 
 TUNING.GAMEMODE_STARTING_ITEMS.DEFAULT.WINSLOW = {
