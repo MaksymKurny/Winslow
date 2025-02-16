@@ -40,6 +40,9 @@ Assets = {
 
     Asset("IMAGE", "images/names_gold_winslow.tex"),
     Asset("ATLAS", "images/names_gold_winslow.xml"),
+
+    Asset("IMAGE", "images/winslow_skilltree.tex"),
+    Asset("ATLAS", "images/winslow_skilltree.xml"),
 }
 
 AddMinimapAtlas("images/map_icons/winslow.xml")
@@ -49,13 +52,12 @@ local modimport = modimport
 local AddClassPostConstruct = AddClassPostConstruct
 local AddComponentPostInit = AddComponentPostInit
 local AddModCharacter = AddModCharacter
-local AddCharacterRecipe = AddCharacterRecipe
 local GetModConfigData = GetModConfigData
-
-GLOBAL.setfenv(1, GLOBAL)
+local STRINGS = GLOBAL.STRINGS
 
 modimport("scripts/strings")
 modimport("scripts/tuning")
+modimport("scripts/recipes")
 
 local skin_modes = {
     {
@@ -66,6 +68,8 @@ local skin_modes = {
         offset = { 0, -25 }
     },
 }
+
+GLOBAL.setfenv(1, GLOBAL)
 
 AddComponentPostInit("petleash", function(self)
     self.maxpetspertag = nil
@@ -221,158 +225,99 @@ AddComponentPostInit("petleash", function(self)
     end
 end)
 
-AddModCharacter("winslow", "MALE", skin_modes)
+local SkillTreeDefs = require("prefabs/skilltree_defs")
+local _MakeNoShadowLock = SkillTreeDefs.FN.MakeNoShadowLock
+SkillTreeDefs.FN.MakeNoShadowLock = function(extra_data, not_root)
+    local lock = _MakeNoShadowLock(extra_data, not_root)
+    lock.lock_open = function(prefabname, activatedskills, readonly)
+        if SkillTreeDefs.FN.CountTags(prefabname, "shadow_favor", activatedskills) == 0 and SkillTreeDefs.FN.CountTags(prefabname, "rejected_favor", activatedskills) == 0 then
+            return true
+        end
 
-local atlas = "images/inventoryimages/winslow.xml"
-RegisterInventoryItemAtlas(atlas, "baton.tex")
-AddCharacterRecipe("baton", { Ingredient("log", 1), Ingredient("nightmarefuel", 1) }, TECH.NONE,
-    {
-        builder_tag = "conductor",
-        atlas = atlas,
-    })
-AddCharacterRecipe("violin", { Ingredient("nightmarefuel", 1) }, TECH.NONE,
-    {
-        builder_tag = "conductor",
-        atlas = atlas,
-        image = "violin.tex",
-        product = "winslow_orchestraproxy_violin",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
-        end
-    })
-AddCharacterRecipe("drum", { Ingredient("nightmarefuel", 1), Ingredient("pigskin", 1) }, TECH.NONE,
-    {
-        builder_tag = "conductor",
-        atlas = atlas,
-        image = "drum.tex",
-        product = "winslow_orchestraproxy_drum",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
-        end
-    })
-AddCharacterRecipe("clarinet", { Ingredient("nightmarefuel", 2), Ingredient("transistor", 1) }, TECH.NONE,
-    {
-        builder_tag = "conductor",
-        atlas = atlas,
-        image = "clarinet.tex",
-        product = "winslow_orchestraproxy_clarinet",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
-        end
-    })
-AddCharacterRecipe("bass", { Ingredient("nightmarefuel", 2), Ingredient("livinglog", 1) }, TECH.NONE,
-    {
-        builder_tag = "conductor",
-        atlas = atlas,
-        image = "clarinet.tex",
-        product = "winslow_orchestraproxy_bass",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
-        end
-    })
-AddCharacterRecipe("trombone", { Ingredient("nightmarefuel", 2), Ingredient("goldnugget", 1) }, TECH.NONE,
-    {
-        builder_tag = "conductor",
-        atlas = atlas,
-        image = "trombone.tex",
-        product = "winslow_orchestraproxy_trombone",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
-        end
-    })
-AddCharacterRecipe("guitar", { Ingredient("nightmarefuel", 2), Ingredient("log", 4) }, TECH.NONE,
-    {
-        builder_tag = "conductor",
-        atlas = atlas,
-        image = "guitar.tex",
-        product = "winslow_orchestraproxy_guitar",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
-        end
-    })
+        return nil -- Important to return nil and not false.
+    end
+    return lock
+end
 
-AddCharacterRecipe("piano", { Ingredient("nightmarefuel", 3), Ingredient("marble", 2) }, TECH.NONE,
-    {
-        builder_tag = "conductor_allegiance_shadow",
-        atlas = atlas,
-        image = "piano.tex",
-        product = "winslow_orchestraproxy_piano",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
+local _MakeNoLunarLock = SkillTreeDefs.FN.MakeNoLunarLock
+SkillTreeDefs.FN.MakeNoLunarLock = function(extra_data, not_root)
+    local lock = _MakeNoLunarLock(extra_data, not_root)
+    lock.lock_open = function(prefabname, activatedskills, readonly)
+        if SkillTreeDefs.FN.CountTags(prefabname, "lunar_favor", activatedskills) == 0 and SkillTreeDefs.FN.CountTags(prefabname, "rejected_favor", activatedskills) == 0 then
+            return true
         end
-    })
-AddCharacterRecipe("saxophone", { Ingredient("nightmarefuel", 3), Ingredient("goldnugget", 5) }, TECH.NONE,
-    {
-        builder_tag = "conductor_allegiance_shadow",
-        atlas = atlas,
-        image = "saxophone.tex",
-        product = "winslow_orchestraproxy_saxophone",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
-        end
-    })
 
-AddCharacterRecipe("shamisen", { Ingredient("moonglass", 2), Ingredient("goldnugget", 2) }, TECH.NONE,
-    {
-        builder_tag = "conductor_allegiance_lunar",
-        atlas = atlas,
-        image = "shamisen.tex",
-        product = "winslow_orchestraproxy_shamisen",
-        sg_state = "spawn_mutated_creature",
-        actionstr = "TRANSFORM",
-        no_deconstruction = true,
-        dropitem = true,
-        canbuild = function(
-            inst, builder)
-            return (builder.components.petleash and not builder.components.petleash:IsFullForTag("orchestra")),
-                "FULLORCHESTRA"
+        return nil -- Important to return nil and not false.
+    end
+    return lock
+end
+
+SkillTreeDefs.FN.MakeAllLock = function(extra_data, not_root)
+    local lock = {
+        desc = STRINGS.SKILLTREE.ALLEGIANCE_LOCK_6_DESC,
+        root = not not_root,
+        group = "allegiance",
+        tags = { "allegiance", "lock" },
+        lock_open = function(prefabname, activatedskills, readonly)
+            if readonly then
+                return "question"
+            end
+
+            return TheGenericKV:GetKV("fuelweaver_killed") == "1" and
+                TheGenericKV:GetKV("celestialchampion_killed") == "1"
+        end,
+    }
+
+    if extra_data then
+        lock.pos = extra_data.pos
+        lock.connects = extra_data.connects
+        lock.group = extra_data.group or lock.group
+    end
+
+    return lock
+end
+
+SkillTreeDefs.FN.MakeRejectedAllLock = function(extra_data, not_root)
+    local lock = {
+        desc = STRINGS.SKILLTREE.ALLEGIANCE_LOCK_7_DESC,
+        root = not not_root,
+        group = "allegiance",
+        tags = { "allegiance", "lock" },
+        lock_open = function(prefabname, activatedskills, readonly)
+            if SkillTreeDefs.FN.CountTags(prefabname, "shadow_favor", activatedskills) == 0 and SkillTreeDefs.FN.CountTags(prefabname, "lunar_favor", activatedskills) == 0 then
+                return true
+            end
+
+            return nil -- Important to return nil and not false.
+        end,
+    }
+
+    if extra_data then
+        lock.pos = extra_data.pos
+        lock.connects = extra_data.connects
+        lock.group = extra_data.group or lock.group
+    end
+
+    return lock
+end
+
+env.RegisterSkilltreeBGForCharacter("images/winslow_skilltree.xml", "winslow")
+local CreateSkillTree = function()
+    local BuildSkillsData = require("prefabs/skilltree_winslow")
+    if BuildSkillsData then
+        local data = BuildSkillsData(SkillTreeDefs.FN)
+
+        if data then
+            for name, data in pairs(data.SKILLS) do
+                if not data.lock_open and data.icon then
+                    RegisterSkilltreeIconsAtlas("images/winslow_skilltree.xml", data.icon .. ".tex")
+                end
+            end
+            SkillTreeDefs.CreateSkillTreeFor("winslow", data.SKILLS)
+            SkillTreeDefs.SKILLTREE_ORDERS["winslow"] = data.ORDERS
         end
-    })
+    end
+end
+CreateSkillTree();
+
+env.AddModCharacter("winslow", "MALE", skin_modes)
